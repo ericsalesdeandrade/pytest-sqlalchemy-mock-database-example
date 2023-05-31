@@ -2,19 +2,6 @@ from datetime import datetime
 from typing import List
 from pydantic import BaseModel
 
-
-class CustomerBaseSchema(BaseModel):
-    id: str | None = None
-    name: str
-    email: str
-    createdAt: datetime | None = None
-    updatedAt: datetime | None = None
-
-    class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-
 class OrderBaseSchema(BaseModel):
     id: str | None = None
     customer_id: str
@@ -29,7 +16,7 @@ class OrderBaseSchema(BaseModel):
         arbitrary_types_allowed = True
 
 
-# class ListUserResponse(BaseModel):
+# class ListOrderResponse(BaseModel):
 #     status: str
 #     results: int
-#     users: List[UserBaseSchema]
+#     users: List[OrderBaseSchema]

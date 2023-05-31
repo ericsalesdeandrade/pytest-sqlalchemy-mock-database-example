@@ -1,7 +1,8 @@
-from app import models, user
+from app import models, order
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine
+# from models import Base
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -20,10 +21,7 @@ app.add_middleware(
 )
 
 # Define Route for Orders
-app.include_router(user.router, tags=["Orders"], prefix="/api/orders")
-
-# Define Route for Customers
-app.include_router(user.router, tags=["Customers"], prefix="/api/customers")
+app.include_router(order.router, tags=["Orders"], prefix="/api/orders")
 
 @app.get("/api/healthchecker")
 def root():
