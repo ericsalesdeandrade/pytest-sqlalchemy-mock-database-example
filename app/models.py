@@ -3,6 +3,8 @@ from sqlalchemy import TIMESTAMP, Column, String, Integer
 from sqlalchemy.sql import func
 from fastapi_utils.guid_type import GUID, GUID_DEFAULT_SQLITE
 
+GUID.cache_ok = True
+
 
 class Order(Base):
     __tablename__ = "orders"

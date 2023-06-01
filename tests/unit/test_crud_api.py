@@ -1,30 +1,61 @@
 from fastapi.testclient import TestClient
 from app.main import app
 import pytest
-
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 client = TestClient(app)
 
+# def test_get_order_mock(
+#     order_id_fixture, 
+#     db_session, 
+#     mock_order_object
+#     ) -> None:
+
+#     order_id = order_id_fixture
+#     db_session.add(mock_order_object)
+#     db_session.commit()
+#     response = client.get(f"/api/orders/{order_id}")
+#     assert response.status_code == 200
+#     assert response.json() == {
+#         'Status': 'Success', 
+#         'Order': 
+#             {'id': order_id, 
+#             'customer_id': '1', 
+#             'total_amount': 50, 
+#             'updatedAt': None, 
+#             'quantity': 2, 
+#             'createdAt': '2021-07-03T00:00:00'
+#             }
+#          }
+
 @pytest.fixture
-def mock_db(mocker):
+def mock_session(request, mocker):
+    session = mocker.create_autospec(Session)
+    # Customize the session behavior if needed
+    return session
 
-    # Mock the behavior of the database connection methods
-    mocker.execute.return_value = "Mock result"
-    mocker.fetch_all.return_value = [("Mock data 1",), ("Mock data 2",)]
-
-    # Patch the get_db dependency to return the mock connection
-    mocker.patch("main.get_db", return_value=mocker)
-
-    yield mocker
-
-def test_example(mock_db):
-    # Make requests to your FastAPI application using the TestClient
-    client = TestClient(app)
-    response = client.get("/orders")
-
+def test_get_order_mock(mocker, order_id_fixture) -> None:
+    order_id = order_id_fixture
+    mock_response = {
+        'Status': 'Success', 
+        'Order': 
+            {'id': order_id, 
+            'customer_id': '1', 
+            'total_amount': 50, 
+            'updatedAt': None, 
+            'quantity': 2, 
+            'createdAt': '2021-07-03T00:00:00'
+            }
+         }
+    mocker.patch(
+        "app.database.Base.create_all", return_value=None
+    )
+    mocker.patch(
+        "app.database.SessionLocal", return_value=None
+    )
+    mocker.patch(
+        "app.main.app.get", return_value=mock_response
+    )
+    response = client.get(f"/api/orders/{order_id}")
     assert response.status_code == 200
-    print(response.json())
-    # assert response.json() == {"result": "Mock result"}
-
-    # Verify that the database connection methods were called as expected
-    mock_db.execute.assert_called_once_with("SELECT * FROM table")
-    mock_db.fetch_all.assert_called_once()
+    assert response.json() == mock_response
