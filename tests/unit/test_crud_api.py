@@ -1,8 +1,9 @@
 from fastapi.testclient import TestClient
 from app.main import app
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from app.database import SessionLocal
+from app.models import Order
+from app.order import get_order
 client = TestClient(app)
 
 # def test_get_order_mock(
@@ -28,34 +29,27 @@ client = TestClient(app)
 #             }
 #          }
 
-@pytest.fixture
-def mock_session(request, mocker):
-    session = mocker.create_autospec(Session)
-    # Customize the session behavior if needed
-    return session
+@pytest.fixture(scope="module")
+def mock_get_sqlalchemy_session(mocker):
+    mock = mocker.patch(
+        "app.database.get_db.query"
+    )
+    yield mock
 
-def test_get_order_mock(mocker, order_id_fixture) -> None:
-    order_id = order_id_fixture
-    mock_response = {
-        'Status': 'Success', 
-        'Order': 
-            {'id': order_id, 
-            'customer_id': '1', 
-            'total_amount': 50, 
-            'updatedAt': None, 
-            'quantity': 2, 
-            'createdAt': '2021-07-03T00:00:00'
-            }
-         }
-    mocker.patch(
-        "app.database.Base.create_all", return_value=None
-    )
-    mocker.patch(
-        "app.database.SessionLocal", return_value=None
-    )
-    mocker.patch(
-        "app.main.app.get", return_value=mock_response
-    )
-    response = client.get(f"/api/orders/{order_id}")
-    assert response.status_code == 200
-    assert response.json() == mock_response
+def test_get_order_mock(
+    mocker,
+    ) -> None:
+    # Create a mock Order object
+    mock_order = mocker.Mock(spec=Order)
+
+    # Mock the query method and its subsequent calls
+    mock_query = mocker.Mock(return_value=mock_order)
+    mocker.patch('app.order.get_order', mock_query)
+
+    # Call the code under test
+    result = get_order(orderId='your_order_id')
+
+    # Assertions or further test code
+    assert result == {"Status": "Success", "Order": mock_order}
+
+
